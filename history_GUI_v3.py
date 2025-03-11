@@ -1,6 +1,7 @@
 from tkinter import *
 from functools import partial
 import all_constants as c
+from datetime import date
 
 
 class Converter:
@@ -76,10 +77,10 @@ class DisplayHistory:
 
         # If there is more than 5 items
         else:
-            for item in newest_first_list[:c.MAX_CALCULATIONS-1]:
+            for item in newest_first_list[:c.MAX_CALCULATIONS - 1]:
                 newest_first_string += item + "\n"
 
-            newest_first_string += newest_first_list[c.MAX_CALCULATIONS-1]
+            newest_first_string += newest_first_list[c.MAX_CALCULATIONS - 1]
 
         export_instructions_txt = ("Please push <Export> to save you calculations in "
                                    "file. If filename already exists, it will be")
@@ -113,7 +114,7 @@ class DisplayHistory:
 
         # button list (button text | bg colour | command | column
         button_details_list = [
-            ["Export", "#004C99", "", 0, 0],
+            ["Export", "#004C99", lambda: self.export_data(calculations), 0, 0],
             ["Close", "#666666", partial(self.close_history, partner), 0, 1],
         ]
 
@@ -125,6 +126,34 @@ class DisplayHistory:
                                       command=btn[2]
                                       )
             self.make_button.grid(row=btn[3], column=btn[4], padx=10, pady=10)
+
+    def export_data(self, calculations):
+        # get current dat for the heading of the filename
+        today = date.today()
+
+        # Get dat, month and year as individual strings
+        day = today.strftime("%d")
+        month = today.strftime("%m")
+        year = today.strftime("%y")
+
+        filename = f"temperatures_{year}_{month}_{day}"
+
+        success_string = "Export Successful! The file is called" \
+                         f"{filename}.txt"
+        self.export_filename_label.config(fg="#12de12", text=success_string,
+                                          font=("Arial", "13", "bold"))
+
+        write_to = f"{filename}.txt"
+
+        with open(write_to, "w") as text_file:
+            text_file.write("***** Temperature Calculations *****\n")
+            text_file.write(f"Generated: {day}/{month}/{year}\n\n")
+            text_file.write("Here is your calculation history (oldest to Newest)...\n")
+
+            # write the item to file
+            for item in calculations:
+                text_file.write(item)
+                text_file.write("\n")
 
     def close_history(self, partner):
         """
